@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import { registerUser } from '../utils/auth'; // Update with path to registerUser
@@ -10,8 +10,22 @@ function RegisterForm({ user, updateUser }) {
     last_name: '',
     profile_image_url: '',
     email: '',
+    registered_organizer: false,
     uid: user.uid,
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        profile_image_url: user.profile_image_url || '',
+        email: user.email || '',
+        uid: user.uid || '',
+      }));
+    }
+  }, [user]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -61,6 +75,20 @@ function RegisterForm({ user, updateUser }) {
           placeholder="Email"
           onChange={handleChange}
         />
+        <Form.Check
+          className="organizer"
+          type="switch"
+          id="registered_organizer"
+          name="registered_organizer"
+          label="Registered Oraganizer"
+          checked={formData.registered_organizer}
+          onChange={(e) => {
+            setFormData((prevState) => ({
+              ...prevState,
+              registered_organizer: e.target.checked,
+            }));
+          }}
+        />
       </Form.Group>
       <Button variant="primary" type="submit">
         Submit
@@ -71,11 +99,11 @@ function RegisterForm({ user, updateUser }) {
 
 RegisterForm.propTypes = {
   user: PropTypes.shape({
-    uid: PropTypes.string.isRequired,
-    first_name: PropTypes.string.isRequired,
-    last_name: PropTypes.string.isRequired,
-    profile_image_url: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
+    first_name: PropTypes.string,
+    last_name: PropTypes.string,
+    profile_image_url: PropTypes.string,
+    email: PropTypes.string,
+    uid: PropTypes.string,
   }).isRequired,
   updateUser: PropTypes.func.isRequired,
 };

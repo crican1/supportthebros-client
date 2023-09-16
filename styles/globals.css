@@ -18,5 +18,30 @@ a {
 }
 
 body {
-  background-color: #88effd;
+  background-color: black;
+}
+
+.posts {
+  color: white;
+}
+
+/* .postCard {
+  color: white;
+} */
+
+.postForm {
+  color: white
+}
+
+.organizer {
+  color: white
+}
+
+.glass-effect {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1));
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px 0 rgba(255, 255, 255, 0.37);
+  border: 1px solig rgba(255, 255, 255, 0.18);
+  border-radius: 32px;
 }
