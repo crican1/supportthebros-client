@@ -5,6 +5,8 @@ import { Button, Form } from 'react-bootstrap';
 import Head from 'next/head';
 import { createPost, updatePost } from '../../utils/data/postData';
 import { useAuth } from '../../utils/context/authContext';
+import { getTags } from '../../utils/data/tagData';
+import { getTagsByOrganizerPostId } from '../../utils/data/postTagData';
 
 const initialState = {
   title: '',
@@ -12,29 +14,31 @@ const initialState = {
   postContent: '',
   goal: '',
   createdOn: '',
-  tag: '',
+  tagId: 0,
 };
 
-const PostForm = ({ obj }) => {
+// eslint-disable-next-line react/prop-types
+const PostForm = ({ obj, organizerPostId }) => {
   const [currentPost, SetCurrentPost] = useState(initialState);
+  const [postTags, setPostTags] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   const router = useRouter();
   const { user } = useAuth();
   const { id } = router.query;
 
-  const tag = [
-    { id: 1, name: 'Health' },
-    { id: 2, name: 'Finance' },
-    { id: 3, name: 'Education' },
-    { id: 4, name: 'Disaster Relief' },
-    { id: 5, name: 'Animals' },
-    { id: 6, name: 'Environment' },
-    { id: 7, name: 'Art' },
-    { id: 8, name: 'Homelessness' },
-    { id: 9, name: 'Food' },
-    { id: 10, name: 'Politics' },
-  ];
+  const getTagsThenSetSelected = () => {
+    getTagsByOrganizerPostId(organizerPostId).then(async (arr) => {
+      await setSelectedTags(arr);
+    });
+  };
+
+  const getTagsThenSet = () => {
+    getTags().then(setPostTags);
+  };
 
   useEffect(() => {
+    getTagsThenSetSelected();
+    getTagsThenSet();
     if (obj.id) {
       SetCurrentPost({
         id: obj.id,
@@ -43,19 +47,36 @@ const PostForm = ({ obj }) => {
         postContent: obj.post_content,
         goal: obj.goal,
         createdOn: obj.created_on,
-        tag: obj.tag,
+        tagId: obj.tag_id?.id,
       });
     }
-  }, [obj, user]);
+  }, [obj, organizerPostId]);
+
+  console.warn(selectedTags);
+  console.warn(organizerPostId);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     SetCurrentPost((prevState) => ({
       // TAKES WHATEVER THE PREVIOUS VALUE WAS.
       ...prevState,
       [name]: value,
     }));
+  };
+
+  const handleCheckboxChange = (tagId) => {
+    if (selectedTags.some((eng) => eng.id === tagId)) {
+      // if the engineer is already included in the array,
+      // we create a new array using .filter that includes every engineer
+      // except for the engineer who was deselected
+      setSelectedTags(selectedTags.filter((eng) => eng.id !== tagId));
+    } else {
+      // if the engineer is not already included in the array,
+      // we use the spread operator to include the selected engineers
+      // and we add the newly selected engineer to the array
+      const tags = postTags.filter((eng) => eng.id === tagId);
+      setSelectedTags([...selectedTags, tags[0]]);
+    }
   };
 
   const handleSubmit = (e) => {
@@ -69,7 +90,7 @@ const PostForm = ({ obj }) => {
         postImage: currentPost.postImage,
         postContent: currentPost.postContent,
         goal: currentPost.goal,
-        tag: currentPost.tag,
+        tagId: currentPost.tagId,
       };
 
       updatePost(postUpdate)
@@ -81,7 +102,7 @@ const PostForm = ({ obj }) => {
         postImage: currentPost.postImage,
         postContent: currentPost.postContent,
         goal: currentPost.goal,
-        tag: currentPost.tag,
+        tagId: currentPost.tagId,
         uid: user.uid,
       };
       createPost(posts).then(() => router.push('/posts'));
@@ -137,25 +158,22 @@ const PostForm = ({ obj }) => {
               type="string"
             />
           </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Tags</Form.Label>
-            <Form.Select
-              name="tag"
-              required
-              value={currentPost.tag}
-              onChange={handleChange}
-            >
-              <option value="">Select a Tag</option>
-              {tag.map((tags) => (
-                <option
-                  key={tags.id}
-                  value={tags.name}
-                >
-                  {tags.name}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
+          <Form.Label>Tags</Form.Label>
+          {postTags.map((postTag) => (
+            <div className="form-check" key={currentPost.id}>
+              <input
+                className="form-check-input"
+                type="checkbox"
+                value={postTag.id}
+                id={`tag-${postTag.id}`}
+                checked={selectedTags.some((tags) => tags.id === postTag.id)}
+                onChange={() => handleCheckboxChange(postTag.id)}
+              />
+              <label className="form-check-label" htmlFor={`tag-${postTag.id}`}>
+                {postTag.title}
+              </label>
+            </div>
+          ))}
           <Button variant="info" type="submit">
             Submit
           </Button>
@@ -172,7 +190,10 @@ PostForm.propTypes = {
     post_image: PropTypes.string,
     post_content: PropTypes.string,
     created_on: PropTypes.string,
-    tag: PropTypes.string,
+    tag_id: PropTypes.shape({
+      id: PropTypes.number,
+      title: PropTypes.string,
+    }),
     goal: PropTypes.string,
   }),
 };

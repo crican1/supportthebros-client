@@ -47,7 +47,7 @@ function Posts() {
               postContent={post.post_content}
               goal={post.goal}
               createdOn={post.created_on}
-              tag={post.tag}
+              tagId={post.tag_id}
               uid={user.uid}
               onUpdate={showPosts}
             />
