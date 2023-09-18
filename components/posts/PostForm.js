@@ -6,7 +6,7 @@ import Head from 'next/head';
 import { createPost, updatePost } from '../../utils/data/postData';
 import { useAuth } from '../../utils/context/authContext';
 import { getTags } from '../../utils/data/tagData';
-import { getTagsByOrganizerPostId } from '../../utils/data/postTagData';
+import { createPostTag } from '../../utils/data/postTagData';
 
 const initialState = {
   title: '',
@@ -14,30 +14,29 @@ const initialState = {
   postContent: '',
   goal: '',
   createdOn: '',
-  tagId: 0,
+  tagId: '',
 };
 
 // eslint-disable-next-line react/prop-types
-const PostForm = ({ obj, organizerPostId }) => {
+export default function PostForm({ obj, postId }) {
   const [currentPost, SetCurrentPost] = useState(initialState);
   const [postTags, setPostTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
   const router = useRouter();
   const { user } = useAuth();
-  const { id } = router.query;
 
-  const getTagsThenSetSelected = () => {
-    getTagsByOrganizerPostId(organizerPostId).then(async (arr) => {
-      await setSelectedTags(arr);
-    });
-  };
+  // const getTagsThenSetSelected = () => {
+  //   getTagsByOrganizerPostId(postId).then(async (arr) => {
+  //     await setSelectedTags(arr);
+  //   });
+  // };
 
   const getTagsThenSet = () => {
     getTags().then(setPostTags);
   };
 
   useEffect(() => {
-    getTagsThenSetSelected();
+    // getTagsThenSetSelected();
     getTagsThenSet();
     if (obj.id) {
       SetCurrentPost({
@@ -50,10 +49,10 @@ const PostForm = ({ obj, organizerPostId }) => {
         tagId: obj.tag_id?.id,
       });
     }
-  }, [obj, organizerPostId]);
+  }, [obj, postId]);
 
+  console.warn(postTags);
   console.warn(selectedTags);
-  console.warn(organizerPostId);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,16 +64,10 @@ const PostForm = ({ obj, organizerPostId }) => {
   };
 
   const handleCheckboxChange = (tagId) => {
-    if (selectedTags.some((eng) => eng.id === tagId)) {
-      // if the engineer is already included in the array,
-      // we create a new array using .filter that includes every engineer
-      // except for the engineer who was deselected
-      setSelectedTags(selectedTags.filter((eng) => eng.id !== tagId));
+    if (selectedTags.some((tag) => tag.id === tagId)) {
+      setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId));
     } else {
-      // if the engineer is not already included in the array,
-      // we use the spread operator to include the selected engineers
-      // and we add the newly selected engineer to the array
-      const tags = postTags.filter((eng) => eng.id === tagId);
+      const tags = postTags.filter((tag) => tag.id === tagId);
       setSelectedTags([...selectedTags, tags[0]]);
     }
   };
@@ -84,28 +77,52 @@ const PostForm = ({ obj, organizerPostId }) => {
     e.preventDefault();
 
     if (obj.id) {
-      const postUpdate = {
-        id: obj.id,
-        title: currentPost.title,
-        postImage: currentPost.postImage,
-        postContent: currentPost.postContent,
-        goal: currentPost.goal,
-        tagId: currentPost.tagId,
+      const updatePostWithPostTags = async () => {
+        const postUpdate = {
+          id: obj.id,
+          title: currentPost.title,
+          postImage: currentPost.postImage,
+          postContent: currentPost.postContent,
+          goal: currentPost.goal,
+          tagId: Number(currentPost.tagId),
+        };
+        await updatePost(postUpdate);
+        const tagIds = [];
+        selectedTags.forEach((tags) => {
+          tagIds.push(tags.id);
+        });
+        const payload = {
+          tagIds,
+          postId: currentPost.id,
+        };
+        createPostTag(payload);
+        router.push('/posts');
       };
-
-      updatePost(postUpdate)
-        .then(() => router.push(`/posts/${id}`));
+      updatePostWithPostTags();
     } else {
-      const posts = {
-        id: obj.id,
-        title: currentPost.title,
-        postImage: currentPost.postImage,
-        postContent: currentPost.postContent,
-        goal: currentPost.goal,
-        tagId: currentPost.tagId,
-        uid: user.uid,
+      const createPostWithPostTags = async () => {
+        const posts = {
+          id: obj.id,
+          title: currentPost.title,
+          postImage: currentPost.postImage,
+          postContent: currentPost.postContent,
+          goal: currentPost.goal,
+          tagId: Number(currentPost.tagId),
+          uid: user.uid,
+        };
+        const newPost = await createPost(posts);
+        const tagIds = [];
+        postTags.forEach((tag) => {
+          tagIds.push(tag.id);
+        });
+        const payload = {
+          tagIds,
+          postId: newPost.id,
+        };
+        createPostTag(payload);
+        router.push('/posts');
       };
-      createPost(posts).then(() => router.push('/posts'));
+      createPostWithPostTags();
     }
   };
 
@@ -160,7 +177,7 @@ const PostForm = ({ obj, organizerPostId }) => {
           </Form.Group>
           <Form.Label>Tags</Form.Label>
           {postTags.map((postTag) => (
-            <div className="form-check" key={currentPost.id}>
+            <div className="form-check" key={postTag.id}>
               <input
                 className="form-check-input"
                 type="checkbox"
@@ -169,7 +186,7 @@ const PostForm = ({ obj, organizerPostId }) => {
                 checked={selectedTags.some((tags) => tags.id === postTag.id)}
                 onChange={() => handleCheckboxChange(postTag.id)}
               />
-              <label className="form-check-label" htmlFor={`tag-${postTag.id}`}>
+              <label className="form-check-label" htmlFor={`posttag-${postTag.id}`}>
                 {postTag.title}
               </label>
             </div>
@@ -181,7 +198,7 @@ const PostForm = ({ obj, organizerPostId }) => {
       </article>
     </>
   );
-};
+}
 
 PostForm.propTypes = {
   obj: PropTypes.shape({
@@ -195,11 +212,10 @@ PostForm.propTypes = {
       title: PropTypes.string,
     }),
     goal: PropTypes.string,
+    postId: PropTypes.number,
   }),
 };
 
 PostForm.defaultProps = {
   obj: initialState,
 };
-
-export default PostForm;
