@@ -15,7 +15,7 @@ const PostCard = ({
   postContent,
   goal,
   createdOn,
-  tag,
+  tagId,
 }) => {
   const router = useRouter();
   // eslint-disable-next-line no-unused-vars
@@ -45,7 +45,7 @@ const PostCard = ({
         <Card.Body>
           <Card.Text>{postContent}</Card.Text>
           <Card.Text>Goal: ${goal}</Card.Text>
-          <Badge bg="warning">{tag}</Badge>
+          <Badge bg="warning">{tagId.title}</Badge>
           <Card.Footer>Created On: {createdOn}</Card.Footer>
         </Card.Body>
         <Button
@@ -68,7 +68,9 @@ PostCard.propTypes = {
   postContent: PropTypes.string.isRequired,
   goal: PropTypes.string.isRequired,
   createdOn: PropTypes.string.isRequired,
-  tag: PropTypes.string.isRequired,
+  tagId: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default PostCard;

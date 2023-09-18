@@ -26,8 +26,8 @@ const updatePostTag = (postId) => new Promise((resolve, reject) => {
     .catch(reject);
 });
 
-const getTagsByPostId = (id) => new Promise((resolve, reject) => {
-  fetch(`${clientCredentials.databaseURL}/post_tags?organizerPostId=${id.organizerPostId}`, {
+const getTagsByOrganizerPostId = (id) => new Promise((resolve, reject) => {
+  fetch(`${clientCredentials.databaseURL}/posts?organizerPostId=${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -42,5 +42,5 @@ export {
   getPostTags,
   getSinglePostTag,
   updatePostTag,
-  getTagsByPostId,
+  getTagsByOrganizerPostId,
 };

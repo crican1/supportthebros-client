@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { getTagsByPostId } from '../../utils/data/postTagData';
+import { getTagsByOrganizerPostId } from '../../utils/data/postTagData';
 import PostTagCard from '../../components/postTag/PostTagCard';
 
 export default function PostTags() {
@@ -9,7 +9,7 @@ export default function PostTags() {
   const { id } = router.query;
 
   const getAllPostTags = () => {
-    getTagsByPostId(id).then((data) => setPostTags(data));
+    getTagsByOrganizerPostId(id).then((data) => setPostTags(data));
   };
 
   useEffect(() => {
