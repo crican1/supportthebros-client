@@ -5,12 +5,17 @@ import { Button, Card } from 'react-bootstrap';
 import Head from 'next/head';
 import { deletePost, getSinglePost } from '../../utils/data/postData';
 import { useAuth } from '../../utils/context/authContext';
+import { getTagsByOrganizerPostId } from '../../utils/data/postTagData';
+import PostTagCard from '../../components/postTag/PostTagCard';
 
 const ViewPost = () => {
   const router = useRouter();
   const { user } = useAuth();
   const [postDetails, setPostDetails] = useState([]);
+  const [postTags, setPostTags] = useState([]);
   const { id } = router.query;
+
+  console.warn(postTags);
 
   const deleteThisPost = () => {
     if (window.confirm('Delete Post?')) {
@@ -18,11 +23,15 @@ const ViewPost = () => {
     }
   };
 
+  const getAllPostTags = async () => {
+    const tags = await getTagsByOrganizerPostId(id);
+    setPostTags(tags);
+  };
+
   useEffect(() => {
-    getSinglePost(id).then((postData) => {
-      setPostDetails(postData);
-    });
-  }, [id]);
+    getSinglePost(id).then(setPostDetails);
+    getAllPostTags();
+  }, [id, setPostTags]);
 
   console.warn(postDetails);
   return (
@@ -45,8 +54,15 @@ const ViewPost = () => {
         <Card.Body>
           <Card.Text> {postDetails.post_content} </Card.Text>
           <Card.Text>Goal: ${postDetails.goal}</Card.Text>
-          {/* <Badge bg="warning">{postDetails.title}
-          </Badge> */}
+          <Card.Body>Tags: {postTags.map((postTag) => (
+            <section key={`post_tag--${postTag.id}`} className="post_tag">
+              <PostTagCard
+                tagId={postTag.tag_id.title}
+                onUpdate={getAllPostTags}
+              />
+            </section>
+          ))}
+          </Card.Body>
           <Card.Footer>Created On: {postDetails.created_on}</Card.Footer>
         </Card.Body>
         { user.uid === postDetails.uid

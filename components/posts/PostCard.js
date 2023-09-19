@@ -2,11 +2,12 @@
 import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import {
-  Badge,
   Button, Card,
 } from 'react-bootstrap';
 import { useEffect, useState } from 'react';
 import { getPosts } from '../../utils/data/postData';
+import { getTagsByOrganizerPostId } from '../../utils/data/postTagData';
+import PostTagCard from '../postTag/PostTagCard';
 
 const PostCard = ({
   id,
@@ -15,17 +16,25 @@ const PostCard = ({
   postContent,
   goal,
   createdOn,
-  tagId,
+  // tagId,
 }) => {
   const router = useRouter();
   // eslint-disable-next-line no-unused-vars
   const [userPosts, setUserPosts] = useState({});
+  const [postTags, setPostTags] = useState([]);
 
   const showPosts = () => {
     getPosts().then((data) => setUserPosts(data));
   };
+
+  const getAllPostTags = async () => {
+    const tags = await getTagsByOrganizerPostId(id);
+    setPostTags(tags);
+  };
+
   useEffect(() => {
     showPosts();
+    getAllPostTags();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -45,7 +54,15 @@ const PostCard = ({
         <Card.Body>
           <Card.Text>{postContent}</Card.Text>
           <Card.Text>Goal: ${goal}</Card.Text>
-          <Badge bg="warning">{tagId.title}</Badge>
+          <Card.Body>Tags: {postTags.map((postTag) => (
+            <section key={`post_tag--${postTag.id}`} className="post_tag">
+              <PostTagCard
+                tagId={postTag.tag_id.title}
+                onUpdate={getAllPostTags}
+              />
+            </section>
+          ))}
+          </Card.Body>
           <Card.Footer>Created On: {createdOn}</Card.Footer>
         </Card.Body>
         <Button
@@ -68,9 +85,9 @@ PostCard.propTypes = {
   postContent: PropTypes.string.isRequired,
   goal: PropTypes.string.isRequired,
   createdOn: PropTypes.string.isRequired,
-  tagId: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-  }).isRequired,
+  // tagId: PropTypes.shape({
+  //   title: PropTypes.string.isRequired,
+  // }).isRequired,
 };
 
 export default PostCard;
