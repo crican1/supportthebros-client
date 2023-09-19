@@ -6,9 +6,10 @@ import Head from 'next/head';
 import { createPost, updatePost } from '../../utils/data/postData';
 import { useAuth } from '../../utils/context/authContext';
 import { getTags } from '../../utils/data/tagData';
-import { createPostTag } from '../../utils/data/postTagData';
+import { createPostTag, getTagsByOrganizerPostId, updatePostTag } from '../../utils/data/postTagData';
 
 const initialState = {
+  id: '',
   title: '',
   postImage: '',
   postContent: '',
@@ -24,20 +25,21 @@ export default function PostForm({ obj, postId }) {
   const [selectedTags, setSelectedTags] = useState([]);
   const router = useRouter();
   const { user } = useAuth();
+  const { id } = router.query;
 
-  console.warn(obj.id);
-  // const getTagsThenSetSelected = (id) => {
-  //   getTagsByOrganizerPostId(id).then(async (arr) => {
-  //     await setSelectedTags(arr);
-  //   });
-  // };
+  console.warn(id);
+  const getTagsThenSetSelected = () => {
+    getTagsByOrganizerPostId(id).then(async (arr) => {
+      await setSelectedTags(arr);
+    });
+  };
 
   const getTagsThenSet = () => {
-    getTags().then(setPostTags);
+    getTags(id).then(setPostTags);
   };
 
   useEffect(() => {
-    // getTagsThenSetSelected(obj.id);
+    getTagsThenSetSelected(obj.id);
     getTagsThenSet();
     if (obj.id) {
       SetCurrentPost({
@@ -54,7 +56,7 @@ export default function PostForm({ obj, postId }) {
 
   // console.warn(postTags);
   console.warn(selectedTags);
-  console.warn(currentPost);
+  // console.warn(currentPost);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -98,7 +100,7 @@ export default function PostForm({ obj, postId }) {
           organizerPostId: currentPost.id,
         };
         console.warn(payload);
-        createPostTag(payload);
+        updatePostTag(payload);
         router.push('/posts');
       };
       updatePostWithPostTags();
