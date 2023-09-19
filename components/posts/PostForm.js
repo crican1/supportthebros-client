@@ -25,8 +25,9 @@ export default function PostForm({ obj, postId }) {
   const router = useRouter();
   const { user } = useAuth();
 
-  // const getTagsThenSetSelected = () => {
-  //   getTagsByOrganizerPostId(postId).then(async (arr) => {
+  console.warn(obj.id);
+  // const getTagsThenSetSelected = (id) => {
+  //   getTagsByOrganizerPostId(id).then(async (arr) => {
   //     await setSelectedTags(arr);
   //   });
   // };
@@ -36,7 +37,7 @@ export default function PostForm({ obj, postId }) {
   };
 
   useEffect(() => {
-    // getTagsThenSetSelected();
+    // getTagsThenSetSelected(obj.id);
     getTagsThenSet();
     if (obj.id) {
       SetCurrentPost({
@@ -51,8 +52,9 @@ export default function PostForm({ obj, postId }) {
     }
   }, [obj, postId]);
 
-  console.warn(postTags);
+  // console.warn(postTags);
   console.warn(selectedTags);
+  console.warn(currentPost);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -84,7 +86,7 @@ export default function PostForm({ obj, postId }) {
           postImage: currentPost.postImage,
           postContent: currentPost.postContent,
           goal: currentPost.goal,
-          tagId: Number(currentPost.tagId),
+          tagId: currentPost.tagId,
         };
         await updatePost(postUpdate);
         const tagIds = [];
@@ -93,8 +95,9 @@ export default function PostForm({ obj, postId }) {
         });
         const payload = {
           tagIds,
-          postId: currentPost.id,
+          organizerPostId: currentPost.id,
         };
+        console.warn(payload);
         createPostTag(payload);
         router.push('/posts');
       };
@@ -107,17 +110,17 @@ export default function PostForm({ obj, postId }) {
           postImage: currentPost.postImage,
           postContent: currentPost.postContent,
           goal: currentPost.goal,
-          tagId: Number(currentPost.tagId),
+          tagId: currentPost.tagId,
           uid: user.uid,
         };
         const newPost = await createPost(posts);
         const tagIds = [];
-        postTags.forEach((tag) => {
+        selectedTags.forEach((tag) => {
           tagIds.push(tag.id);
         });
         const payload = {
           tagIds,
-          postId: newPost.id,
+          organizerPostId: newPost.id,
         };
         createPostTag(payload);
         router.push('/posts');
