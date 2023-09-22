@@ -42,9 +42,14 @@ function RegisterForm({ user, updateUser }) {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Form.Group className="mb-3" controlId="formBasicEmail">
+      <Form.Group
+        className="mb-3"
+        controlId="formBasicEmail"
+        style={{ padding: '10px ' }}
+      >
         <Form.Control
-          as="textarea"
+          className="mb-3"
+          style={{ padding: '10px ' }}
           name="first_name"
           required
           value={formData.first_name}
@@ -52,7 +57,8 @@ function RegisterForm({ user, updateUser }) {
           onChange={handleChange}
         />
         <Form.Control
-          as="textarea"
+          className="mb-3"
+          style={{ padding: '10px ' }}
           name="last_name"
           required
           value={formData.last_name}
@@ -60,6 +66,7 @@ function RegisterForm({ user, updateUser }) {
           onChange={handleChange}
         />
         <Form.Control
+          className="mb-3"
           type="url"
           name="profile_image_url"
           required
@@ -68,6 +75,7 @@ function RegisterForm({ user, updateUser }) {
           onChange={handleChange}
         />
         <Form.Control
+          className="mb-3"
           type="email"
           name="email"
           required

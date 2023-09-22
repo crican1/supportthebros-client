@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { getSinglePost } from '../../../utils/data/postData';
-import PostForm from '../../../components/posts/PostForm';
+import PostFormNoTags from '../../../components/posts/PostFormNoTags';
 
 export default function EditPostPage() {
   const [editPost, setEditPost] = useState({});
@@ -18,7 +18,7 @@ export default function EditPostPage() {
         <title>Edit Post</title>
       </Head>
       <div>
-        <PostForm obj={editPost} />
+        <PostFormNoTags obj={editPost} />
       </div>
     </>
   );
