@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import Head from 'next/head';
-import { createPost, updatePost } from '../../utils/data/postData';
 import { useAuth } from '../../utils/context/authContext';
-import { getTags } from '../../utils/data/tagData';
 import { createPostTag, deletePostTag, getTagsByOrganizerPostId } from '../../utils/data/postTagData';
+import { getTags } from '../../utils/data/tagData';
+import { createPost, updatePost } from '../../utils/data/postData';
 
 const initialState = {
   title: '',
@@ -17,9 +17,10 @@ const initialState = {
 };
 
 // eslint-disable-next-line react/prop-types
-export default function PostForm({ obj, postId }) {
+export default function PostFormNoTags({ obj, postId }) {
   const [currentPost, SetCurrentPost] = useState(initialState);
   const [postTags, setPostTags] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [selectedTags, setSelectedTags] = useState([]);
   const router = useRouter();
   const { user } = useAuth();
@@ -50,7 +51,6 @@ export default function PostForm({ obj, postId }) {
         postContent: obj.post_content,
         goal: obj.goal,
         createdOn: obj.created_on,
-        tagId: obj.tag_id,
       });
     }
   }, [obj, postId]);
@@ -66,15 +66,6 @@ export default function PostForm({ obj, postId }) {
       ...prevState,
       [name]: value,
     }));
-  };
-
-  const handleCheckboxChange = (tagId) => {
-    if (selectedTags.some((tag) => tag.id === tagId)) {
-      setSelectedTags(selectedTags.filter((tag) => tag.id !== tagId));
-    } else {
-      const tags = postTags.filter((tag) => tag.id === tagId);
-      setSelectedTags([...selectedTags, tags[0]]);
-    }
   };
 
   const handleSubmit = (e) => {
@@ -181,22 +172,6 @@ export default function PostForm({ obj, postId }) {
               type="string"
             />
           </Form.Group>
-          <Form.Label>Tags</Form.Label>
-          {postTags.map((postTag) => (
-            <div className="form-check" key={postTag.id}>
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value={postTag.id}
-                id={`tag-${postTag.id}`}
-                checked={selectedTags.some((tags) => tags.id === postTag.id)}
-                onChange={() => handleCheckboxChange(postTag.id)}
-              />
-              <label className="form-check-label" htmlFor={`posttag-${postTag.id}`}>
-                {postTag.title}
-              </label>
-            </div>
-          ))}
           <Button variant="info" type="submit">
             Submit
           </Button>
@@ -206,22 +181,18 @@ export default function PostForm({ obj, postId }) {
   );
 }
 
-PostForm.propTypes = {
+PostFormNoTags.propTypes = {
   obj: PropTypes.shape({
     id: PropTypes.number,
     title: PropTypes.string,
     post_image: PropTypes.string,
     post_content: PropTypes.string,
     created_on: PropTypes.string,
-    tag_id: PropTypes.shape({
-      id: PropTypes.number,
-      title: PropTypes.string,
-    }),
     goal: PropTypes.string,
     postId: PropTypes.number,
   }),
 };
 
-PostForm.defaultProps = {
+PostFormNoTags.defaultProps = {
   obj: initialState,
 };
